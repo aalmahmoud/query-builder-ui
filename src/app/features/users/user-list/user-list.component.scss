@@ -1,0 +1,45 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  h1 { margin: 0; }
+  .count { margin: 0; color: var(--mat-sys-on-surface-variant); font-size: 14px; }
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-container {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--mat-sys-surface);
+}
+
+table { width: 100%; }
+
+.role-chip {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.status-chip {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  &.active { background: #e8f5e9; color: #2e7d32; }
+  &.inactive { background: #fce4ec; color: #c62828; }
+}
+
+.no-data td {
+  text-align: center;
+  padding: 48px;
+  color: var(--mat-sys-on-surface-variant);
+}

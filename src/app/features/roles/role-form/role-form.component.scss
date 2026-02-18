@@ -1,0 +1,41 @@
+.form-page { max-width: 700px; }
+.form-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  h1 { margin: 0; }
+}
+.form-card { padding: 16px; }
+.form-grid { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
+.full-span { grid-column: 1 / -1; }
+.checkbox-row { padding: 8px 0; }
+
+h3 { margin: 16px 0 12px; }
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.perm-group {
+  padding: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+}
+
+.perm-resource {
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.perm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-actions {
+  display: flex; justify-content: flex-end; gap: 8px; padding-top: 8px;
+}

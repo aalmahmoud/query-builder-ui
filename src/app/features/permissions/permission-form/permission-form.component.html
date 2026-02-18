@@ -1,0 +1,53 @@
+<div class="form-page">
+  <div class="form-header">
+    <button mat-icon-button routerLink="/permissions"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ isEdit ? 'Edit Permission' : 'New Permission' }}</h1>
+  </div>
+
+  @if (loading()) {
+    <mat-spinner></mat-spinner>
+  } @else {
+    <mat-card class="form-card">
+      <mat-card-content>
+        <form (ngSubmit)="save()" class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Resource</mat-label>
+            <input matInput [(ngModel)]="form.resource" name="resource" required
+              placeholder="e.g. user, role, report"
+              (ngModelChange)="onResourceOrActionChange()">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Action</mat-label>
+            <input matInput [(ngModel)]="form.action" name="action" required
+              placeholder="e.g. create, read, update, delete"
+              (ngModelChange)="onResourceOrActionChange()">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-span">
+            <mat-label>Name (auto-generated)</mat-label>
+            <input matInput [(ngModel)]="form.name" name="name" required
+              placeholder="resource:action">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-span">
+            <mat-label>Description</mat-label>
+            <textarea matInput [(ngModel)]="form.description" name="description" rows="2"></textarea>
+          </mat-form-field>
+
+          <div class="checkbox-row">
+            <mat-checkbox [(ngModel)]="form.isActive" name="isActive">Active</mat-checkbox>
+          </div>
+
+          <div class="form-actions">
+            <button mat-button type="button" routerLink="/permissions">Cancel</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+              @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
+              @else { {{ isEdit ? 'Update' : 'Create' }} }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

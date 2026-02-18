@@ -1,0 +1,53 @@
+.query-builder {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.builder-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.builder-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.condition-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.field-select {
+  min-width: 180px;
+}
+
+.op-select {
+  min-width: 160px;
+}
+
+.value-input {
+  min-width: 160px;
+  flex: 1;
+}
+
+.value-input.wide {
+  flex: 2;
+}

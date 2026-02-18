@@ -1,0 +1,70 @@
+<div class="query-builder">
+  <div class="builder-header">
+    <span class="builder-title">Search Filters</span>
+    <div class="builder-actions">
+      <button mat-stroked-button (click)="addCondition()">
+        <mat-icon>add</mat-icon> Add Filter
+      </button>
+      <button mat-stroked-button (click)="clearAll()" [disabled]="rows.length === 0">
+        <mat-icon>clear_all</mat-icon> Clear
+      </button>
+      <button mat-flat-button color="primary" (click)="doSearch()">
+        <mat-icon>search</mat-icon> Search
+      </button>
+    </div>
+  </div>
+
+  @if (rows.length > 0) {
+    <div class="conditions">
+      @for (row of rows; track $index; let i = $index) {
+        <div class="condition-row">
+          <mat-form-field appearance="outline" class="field-select">
+            <mat-label>Field</mat-label>
+            <mat-select [(ngModel)]="row.field">
+              @for (f of fields; track f.field) {
+                <mat-option [value]="f.field">{{ f.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="op-select">
+            <mat-label>Operation</mat-label>
+            <mat-select [(ngModel)]="row.operation">
+              @for (op of operations; track op.value) {
+                <mat-option [value]="op.value">{{ op.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (isBetween(row.operation)) {
+            <mat-form-field appearance="outline" class="value-input">
+              <mat-label>From</mat-label>
+              <input matInput [(ngModel)]="row.startValue"
+                [type]="getFieldType(row.field) === 'date' ? 'datetime-local' : 'text'">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="value-input">
+              <mat-label>To</mat-label>
+              <input matInput [(ngModel)]="row.endValue"
+                [type]="getFieldType(row.field) === 'date' ? 'datetime-local' : 'text'">
+            </mat-form-field>
+          } @else if (isMultiValue(row.operation)) {
+            <mat-form-field appearance="outline" class="value-input wide">
+              <mat-label>Values (comma-separated)</mat-label>
+              <input matInput [(ngModel)]="row.values" placeholder="value1, value2, value3">
+            </mat-form-field>
+          } @else if (!isNoValue(row.operation)) {
+            <mat-form-field appearance="outline" class="value-input wide">
+              <mat-label>Value</mat-label>
+              <input matInput [(ngModel)]="row.value"
+                [type]="getFieldType(row.field) === 'date' ? 'datetime-local' : 'text'">
+            </mat-form-field>
+          }
+
+          <button mat-icon-button color="warn" (click)="removeCondition(i)" matTooltip="Remove">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

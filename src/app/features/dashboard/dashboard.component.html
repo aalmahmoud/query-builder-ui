@@ -1,0 +1,46 @@
+<div class="dashboard">
+  <h1>Dashboard</h1>
+  <p class="subtitle">Welcome back, {{ auth.username() }}</p>
+
+  <div class="stats-grid">
+    <mat-card class="stat-card" routerLink="/users">
+      <mat-icon class="stat-icon users">people</mat-icon>
+      <div class="stat-value">{{ totalUsers() }}</div>
+      <div class="stat-label">Total Users</div>
+    </mat-card>
+    <mat-card class="stat-card" routerLink="/users">
+      <mat-icon class="stat-icon active">check_circle</mat-icon>
+      <div class="stat-value">{{ activeUsers() }}</div>
+      <div class="stat-label">Active Users</div>
+    </mat-card>
+    <mat-card class="stat-card" routerLink="/roles">
+      <mat-icon class="stat-icon roles">admin_panel_settings</mat-icon>
+      <div class="stat-value">{{ totalRoles() }}</div>
+      <div class="stat-label">Roles</div>
+    </mat-card>
+    <mat-card class="stat-card" routerLink="/permissions">
+      <mat-icon class="stat-icon perms">lock</mat-icon>
+      <div class="stat-value">{{ totalPermissions() }}</div>
+      <div class="stat-label">Permissions</div>
+    </mat-card>
+  </div>
+
+  <div class="quick-actions">
+    <h2>Quick Actions</h2>
+    <div class="actions-grid">
+      <button mat-stroked-button routerLink="/users" class="action-btn">
+        <mat-icon>people</mat-icon> Manage Users
+      </button>
+      @if (auth.hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')) {
+        <button mat-stroked-button routerLink="/roles" class="action-btn">
+          <mat-icon>admin_panel_settings</mat-icon> Manage Roles
+        </button>
+      }
+      @if (auth.hasRole('ROLE_ADMIN')) {
+        <button mat-stroked-button routerLink="/permissions" class="action-btn">
+          <mat-icon>lock</mat-icon> Manage Permissions
+        </button>
+      }
+    </div>
+  </div>
+</div>

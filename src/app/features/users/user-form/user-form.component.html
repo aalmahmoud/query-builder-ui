@@ -1,0 +1,72 @@
+<div class="form-page">
+  <div class="form-header">
+    <button mat-icon-button routerLink="/users"><mat-icon>arrow_back</mat-icon></button>
+    <h1>{{ isEdit ? 'Edit User' : 'New User' }}</h1>
+  </div>
+
+  @if (loading()) {
+    <mat-spinner></mat-spinner>
+  } @else {
+    <mat-card class="form-card">
+      <mat-card-content>
+        <form (ngSubmit)="save()" class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>First Name</mat-label>
+            <input matInput [(ngModel)]="form.firstName" name="firstName" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Last Name</mat-label>
+            <input matInput [(ngModel)]="form.lastName" name="lastName" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput [(ngModel)]="form.email" name="email" type="email" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Mobile Number</mat-label>
+            <input matInput [(ngModel)]="form.mobileNumber" name="mobileNumber"
+              placeholder="+966501234567">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>National ID</mat-label>
+            <input matInput [(ngModel)]="form.nationalId" name="nationalId" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput [(ngModel)]="form.password" name="password" type="password"
+              [required]="!isEdit" [placeholder]="isEdit ? 'Leave blank to keep current' : ''">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Role</mat-label>
+            <mat-select [(ngModel)]="form.roleId" name="roleId" required>
+              @for (role of roles(); track role.id) {
+                <mat-option [value]="role.id">{{ role.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <div class="checkbox-row">
+            <mat-checkbox [(ngModel)]="form.isActive" name="isActive">Active</mat-checkbox>
+          </div>
+
+          <div class="form-actions">
+            <button mat-button type="button" routerLink="/users">Cancel</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+              @if (saving()) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                {{ isEdit ? 'Update' : 'Create' }}
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

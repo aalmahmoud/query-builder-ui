@@ -1,0 +1,60 @@
+.dashboard h1 {
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  padding: 24px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s;
+  &:hover { transform: translateY(-2px); }
+}
+
+.stat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 8px;
+  &.users { color: #1976d2; }
+  &.active { color: #388e3c; }
+  &.roles { color: #f57c00; }
+  &.perms { color: #7b1fa2; }
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.stat-label {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 14px;
+}
+
+.quick-actions h2 {
+  margin: 0 0 12px;
+}
+
+.actions-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
