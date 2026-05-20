@@ -33,8 +33,8 @@ export class UserService {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
 
-  changeStatus(id: number): Observable<void> {
-    return this.http.put<void>(`${this.url}/${id}/change-status`, {});
+  changeStatus(id: number, isActive: boolean): Observable<void> {
+    return this.http.put<void>(`${this.url}/${id}/change-status`, { isActive });
   }
 
   query(request: QueryRequest, page = 0, size = 10, sort = 'createdDate,desc'): Observable<Page<User>> {
