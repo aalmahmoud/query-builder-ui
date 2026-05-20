@@ -102,7 +102,7 @@ export class UserListComponent implements OnInit {
   }
 
   toggleStatus(user: User): void {
-    this.userService.changeStatus(user.id).subscribe({
+    this.userService.changeStatus(user.id, !user.isActive).subscribe({
       next: () => {
         this.notification.success(`User ${user.isActive ? 'deactivated' : 'activated'}`);
         this.loadData();
