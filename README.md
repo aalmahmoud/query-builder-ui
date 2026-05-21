@@ -1,6 +1,19 @@
 # QuerydslAdmin
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+Angular 21 admin UI for the [`query-builder-be`](../query-builder-be) JSON query engine.
+It's a **metadata-driven** front end: field lists, operations, and types come from the
+backend's `/{entity}/metadata` endpoint, so each entity (User / Role / Permission) gets the
+full toolset with no hard-coded field lists.
+
+Features: a recursive **AND/OR** nested-group query builder, a **projection** column picker,
+an **aggregation** panel (group-by + COUNT/SUM/AVG/MIN/MAX), and **saved queries**.
+
+> **Demo walkthrough** (UI steps + API): see [`docs/DEMO.md`](../query-builder-be/docs/DEMO.md)
+> in the backend repo. The shared request/response contract lives in
+> [`docs/CONTRACT.md`](../query-builder-be/docs/CONTRACT.md).
+
+The backend API base URL is configured in `src/environments/`. This project was generated
+with [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
 
 ## Development server
 
