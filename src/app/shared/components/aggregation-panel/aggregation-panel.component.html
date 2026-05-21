@@ -1,0 +1,86 @@
+<div class="agg-panel">
+  <div class="agg-header">
+    <span class="agg-title">Aggregate</span>
+    <button mat-flat-button color="primary" (click)="doRun()" [disabled]="!canRun()">
+      <mat-icon>functions</mat-icon> Run
+    </button>
+  </div>
+
+  <div class="agg-controls">
+    <mat-form-field appearance="outline" class="group-by">
+      <mat-label>Group by</mat-label>
+      <mat-select [(ngModel)]="groupBy" multiple>
+        @for (f of groupableFields; track f.name) {
+          <mat-option [value]="f.name">{{ f.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="metrics">
+      @for (m of metrics; track $index; let i = $index) {
+        <div class="metric-row">
+          <mat-form-field appearance="outline" class="fn-select">
+            <mat-label>Function</mat-label>
+            <mat-select [(ngModel)]="m.fn" (ngModelChange)="onFnChange(m)">
+              @for (fn of functions; track fn) {
+                <mat-option [value]="fn">{{ fn }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (needsField(m.fn)) {
+            <mat-form-field appearance="outline" class="field-select">
+              <mat-label>Field (numeric)</mat-label>
+              <mat-select [(ngModel)]="m.field">
+                @for (f of numericFields(); track f.name) {
+                  <mat-option [value]="f.name">{{ f.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          } @else {
+            <mat-form-field appearance="outline" class="field-select">
+              <mat-label>Field (optional)</mat-label>
+              <mat-select [(ngModel)]="m.field">
+                <mat-option [value]="null">— rows —</mat-option>
+                @for (f of groupableFields; track f.name) {
+                  <mat-option [value]="f.name">{{ f.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
+          <button mat-icon-button color="warn" (click)="removeMetric(i)"
+                  [disabled]="metrics.length === 1" matTooltip="Remove metric">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+      <button mat-stroked-button (click)="addMetric()">
+        <mat-icon>add</mat-icon> Metric
+      </button>
+    </div>
+  </div>
+
+  @if (result) {
+    @if (result.rows.length === 0) {
+      <p class="agg-empty">No rows.</p>
+    } @else {
+      <table class="agg-result">
+        <thead>
+          <tr>
+            @for (c of groupColumns; track c) { <th>{{ c }}</th> }
+            @for (c of metricColumns; track c) { <th class="metric-col">{{ c }}</th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of result.rows; track $index) {
+            <tr>
+              @for (c of groupColumns; track c) { <td>{{ groupValue(row, c) }}</td> }
+              @for (c of metricColumns; track c) { <td class="metric-col">{{ metricValue(row, c) }}</td> }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</div>

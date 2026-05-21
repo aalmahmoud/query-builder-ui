@@ -4,75 +4,114 @@
     <p class="count">{{ totalElements() }} total</p>
   </div>
   <div class="header-actions">
-    <button mat-stroked-button (click)="openExport()">
-      <mat-icon>download</mat-icon> Export
+    <button mat-stroked-button [matMenuTriggerFor]="colsMenu">
+      <mat-icon>view_column</mat-icon> Columns{{ projecting ? ' (' + selectedColumns.length + ')' : '' }}
     </button>
-    <a mat-flat-button color="primary" routerLink="/roles/new">
-      <mat-icon>add</mat-icon> Add Role
-    </a>
+    <mat-menu #colsMenu="matMenu">
+      <div class="menu-pad" (click)="$event.stopPropagation()">
+        @for (f of fields; track f.name) {
+          @if (f.filterable) {
+            <mat-checkbox class="menu-check" [checked]="selectedColumns.includes(f.name)"
+              (change)="toggleColumn(f.name, $event.checked)">{{ f.label }}</mat-checkbox>
+          }
+        }
+      </div>
+      @if (projecting) {
+        <button mat-menu-item (click)="clearProjection()"><mat-icon>clear</mat-icon> Clear projection</button>
+      }
+    </mat-menu>
+
+    <button mat-stroked-button [matMenuTriggerFor]="savedMenu">
+      <mat-icon>bookmark</mat-icon> Saved
+    </button>
+    <mat-menu #savedMenu="matMenu">
+      <div class="menu-pad save-row" (click)="$event.stopPropagation()">
+        <mat-form-field appearance="outline" class="save-field" subscriptSizing="dynamic">
+          <mat-label>Save current as…</mat-label>
+          <input matInput [(ngModel)]="saveName" (keydown.enter)="saveCurrentQuery()">
+        </mat-form-field>
+        <button mat-icon-button color="primary" (click)="saveCurrentQuery()" matTooltip="Save"><mat-icon>save</mat-icon></button>
+      </div>
+      @if (savedQueries.length === 0) { <p class="menu-empty">No saved queries</p> }
+      @for (sq of savedQueries; track sq.id) {
+        <div class="saved-item">
+          <button mat-menu-item (click)="loadSaved(sq)"><mat-icon>play_arrow</mat-icon> {{ sq.name }}</button>
+          <button mat-icon-button color="warn" (click)="$event.stopPropagation(); deleteSaved(sq)" matTooltip="Delete"><mat-icon>delete</mat-icon></button>
+        </div>
+      }
+    </mat-menu>
+
+    <button mat-stroked-button [class.active-toggle]="aggregateMode()" (click)="toggleAggregate()">
+      <mat-icon>functions</mat-icon> Aggregate
+    </button>
+    <button mat-stroked-button (click)="openExport()"><mat-icon>download</mat-icon> Export</button>
+    <a mat-flat-button color="primary" routerLink="/roles/new"><mat-icon>add</mat-icon> Add Role</a>
   </div>
 </div>
 
 <app-query-builder [fields]="fields" (search)="onSearch($event)" (reset)="onReset()"></app-query-builder>
 
-@if (loading()) { <mat-progress-bar mode="indeterminate"></mat-progress-bar> }
+@if (aggregateMode()) {
+  <app-aggregation-panel [fields]="fields" [result]="aggResult" (run)="onAggregate($event)"></app-aggregation-panel>
+} @else {
+  @if (loading()) { <mat-progress-bar mode="indeterminate"></mat-progress-bar> }
 
-<div class="table-container mat-elevation-z1">
-  <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" matSortActive="name" matSortDirection="asc">
-
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-      <td mat-cell *matCellDef="let row"><strong>{{ row.name }}</strong></td>
-    </ng-container>
-
-    <ng-container matColumnDef="description">
-      <th mat-header-cell *matHeaderCellDef>Description</th>
-      <td mat-cell *matCellDef="let row">{{ row.description }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="permissionNames">
-      <th mat-header-cell *matHeaderCellDef>Permissions</th>
-      <td mat-cell *matCellDef="let row">
-        <div class="perm-chips">
-          @for (p of row.permissionNames?.slice(0, 3); track p) {
-            <span class="perm-chip">{{ p }}</span>
+  <div class="table-container mat-elevation-z1">
+    @if (projecting) {
+      <table class="projected">
+        <thead><tr>@for (c of selectedColumns; track c) { <th>{{ c }}</th> }</tr></thead>
+        <tbody>
+          @for (row of projectedRows; track $index) {
+            <tr>@for (c of selectedColumns; track c) { <td>{{ cell(row, c) }}</td> }</tr>
           }
-          @if (row.permissionNames?.length > 3) {
-            <span class="perm-more">+{{ row.permissionNames.length - 3 }} more</span>
-          }
-        </div>
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="isActive">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-      <td mat-cell *matCellDef="let row">
-        <span class="status-chip" [class.active]="row.isActive" [class.inactive]="!row.isActive">
-          {{ row.isActive ? 'Active' : 'Inactive' }}
-        </span>
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="createdDate">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
-      <td mat-cell *matCellDef="let row">{{ row.createdDate | date:'mediumDate' }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Actions</th>
-      <td mat-cell *matCellDef="let row">
-        <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
-        <mat-menu #menu="matMenu">
-          <a mat-menu-item [routerLink]="['/roles', row.id, 'edit']"><mat-icon>edit</mat-icon> Edit</a>
-          <button mat-menu-item (click)="deleteRole(row)"><mat-icon color="warn">delete</mat-icon> Delete</button>
-        </mat-menu>
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    <tr class="no-data" *matNoDataRow><td [attr.colspan]="displayedColumns.length">No roles found</td></tr>
-  </table>
-  <mat-paginator [length]="totalElements()" [pageSize]="pageSize" [pageIndex]="pageIndex"
-    [pageSizeOptions]="[5, 10, 25]" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
-</div>
+          @if (projectedRows.length === 0) { <tr class="no-data"><td [attr.colspan]="selectedColumns.length">No roles found</td></tr> }
+        </tbody>
+      </table>
+    } @else {
+      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" matSortActive="name" matSortDirection="asc">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let row"><strong>{{ row.name }}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let row">{{ row.description }}</td>
+        </ng-container>
+        <ng-container matColumnDef="permissionNames">
+          <th mat-header-cell *matHeaderCellDef>Permissions</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="perm-chips">
+              @for (p of row.permissionNames?.slice(0, 3); track p) { <span class="perm-chip">{{ p }}</span> }
+              @if (row.permissionNames?.length > 3) { <span class="perm-more">+{{ row.permissionNames.length - 3 }} more</span> }
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="isActive">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-chip" [class.active]="row.isActive" [class.inactive]="!row.isActive">{{ row.isActive ? 'Active' : 'Inactive' }}</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="createdDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
+            <mat-menu #menu="matMenu">
+              <a mat-menu-item [routerLink]="['/roles', row.id, 'edit']"><mat-icon>edit</mat-icon> Edit</a>
+              <button mat-menu-item (click)="deleteRole(row)"><mat-icon color="warn">delete</mat-icon> Delete</button>
+            </mat-menu>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr class="no-data" *matNoDataRow><td [attr.colspan]="displayedColumns.length">No roles found</td></tr>
+      </table>
+    }
+    <mat-paginator [length]="totalElements()" [pageSize]="pageSize" [pageIndex]="pageIndex"
+      [pageSizeOptions]="[5, 10, 25]" (page)="onPage($event)" showFirstLastButtons></mat-paginator>
+  </div>
+}

@@ -88,6 +88,30 @@ export class QueryBuilderComponent {
     this.search.emit(this.toRequest());
   }
 
+  /** Repopulate the builder tree from an existing QueryRequest (e.g. a saved query). */
+  setFromRequest(qr: QueryRequest): void {
+    this.root = this.toNode(qr.logic ?? 'AND', qr.conditions ?? [], qr.groups ?? []);
+  }
+
+  private toNode(logic: LogicOperator, conditions: QueryCondition[], groups: QueryGroup[]): GroupNode {
+    return {
+      logic: logic ?? 'AND',
+      conditions: conditions.map(c => this.toRow(c)),
+      groups: groups.map(g => this.toNode(g.logic, g.conditions ?? [], g.groups ?? [])),
+    };
+  }
+
+  private toRow(c: QueryCondition): ConditionRow {
+    return {
+      field: c.field,
+      operation: c.operation ?? 'EQUALS',
+      value: c.value != null ? String(c.value) : '',
+      values: Array.isArray(c.values) ? c.values.map(v => String(v)).join(', ') : '',
+      startValue: c.startValue != null ? String(c.startValue) : '',
+      endValue: c.endValue != null ? String(c.endValue) : '',
+    };
+  }
+
   hasAnything(group: GroupNode = this.root): boolean {
     return group.conditions.some(c => c.field) || group.groups.some(g => this.hasAnything(g));
   }

@@ -77,6 +77,55 @@ export interface EntityMetadata {
   fields: FieldMeta[];
 }
 
+// ---- aggregations (POST /{entity}/aggregate) ----
+
+export type AggregationFn = 'COUNT' | 'SUM' | 'AVG' | 'MIN' | 'MAX';
+
+export interface AggregationMetric {
+  fn: AggregationFn;
+  field?: string | null;
+  alias?: string;
+}
+
+export interface AggregationRequest {
+  filter?: QueryRequest;
+  groupBy: string[];
+  metrics: AggregationMetric[];
+}
+
+export interface AggregationRow {
+  group: Record<string, unknown>;
+  metrics: Record<string, unknown>;
+}
+
+export interface AggregationResult {
+  rows: AggregationRow[];
+}
+
+// ---- saved queries (/{entity}/saved-queries) ----
+
+export interface SavedQuery {
+  id: number;
+  entity: string;
+  name: string;
+  queryRequest: QueryRequest;
+  createdBy: string | null;
+  createdDate: string;
+}
+
+export interface SavedQueryRequest {
+  name: string;
+  queryRequest: QueryRequest;
+}
+
+// ---- keyset cursor (POST /{entity}/query/cursor) ----
+
+export interface CursorPage<T> {
+  content: T[];
+  nextCursor: string | null;
+  hasNext: boolean;
+}
+
 export interface ExportRequest {
   queryRequest: QueryRequest;
   selectedColumns: string[];

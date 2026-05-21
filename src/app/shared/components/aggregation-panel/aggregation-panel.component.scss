@@ -1,0 +1,74 @@
+.agg-panel {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.agg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.agg-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.agg-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.group-by {
+  min-width: 220px;
+}
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fn-select {
+  min-width: 130px;
+}
+
+.field-select {
+  min-width: 200px;
+}
+
+.agg-result {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.agg-result th,
+.agg-result td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.agg-result .metric-col {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.agg-empty {
+  opacity: 0.6;
+  margin-top: 12px;
+}
