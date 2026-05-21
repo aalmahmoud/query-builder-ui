@@ -1,11 +1,8 @@
 <div class="query-builder">
   <div class="builder-header">
-    <span class="builder-title">Search Filters</span>
+    <span class="builder-title">Filters</span>
     <div class="builder-actions">
-      <button mat-stroked-button (click)="addCondition()">
-        <mat-icon>add</mat-icon> Add Filter
-      </button>
-      <button mat-stroked-button (click)="clearAll()" [disabled]="rows.length === 0">
+      <button mat-stroked-button (click)="clearAll()" [disabled]="!hasAnything()">
         <mat-icon>clear_all</mat-icon> Clear
       </button>
       <button mat-flat-button color="primary" (click)="doSearch()">
@@ -14,15 +11,35 @@
     </div>
   </div>
 
-  @if (rows.length > 0) {
-    <div class="conditions">
-      @for (row of rows; track $index; let i = $index) {
+  <!-- root group -->
+  <ng-container [ngTemplateOutlet]="groupTpl"
+                [ngTemplateOutletContext]="{ $implicit: root, isRoot: true }"></ng-container>
+
+  <!-- recursive group template -->
+  <ng-template #groupTpl let-group let-parent="parent" let-index="index" let-isRoot="isRoot">
+    <div class="group" [class.group--or]="group.logic === 'OR'">
+      <div class="group-bar">
+        <mat-button-toggle-group [(ngModel)]="group.logic" class="logic-toggle" hideSingleSelectionIndicator>
+          <mat-button-toggle value="AND">AND</mat-button-toggle>
+          <mat-button-toggle value="OR">OR</mat-button-toggle>
+        </mat-button-toggle-group>
+        <span class="group-hint">{{ group.logic === 'OR' ? 'match any' : 'match all' }}</span>
+        <span class="spacer"></span>
+        @if (!isRoot) {
+          <button mat-icon-button color="warn" (click)="removeGroup(parent, index)" matTooltip="Remove group">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        }
+      </div>
+
+      <!-- conditions -->
+      @for (row of group.conditions; track $index; let i = $index) {
         <div class="condition-row">
           <mat-form-field appearance="outline" class="field-select">
             <mat-label>Field</mat-label>
-            <mat-select [(ngModel)]="row.field">
-              @for (f of fields; track f.field) {
-                <mat-option [value]="f.field">{{ f.label }}</mat-option>
+            <mat-select [(ngModel)]="row.field" (ngModelChange)="onFieldChange(row)">
+              @for (f of fields; track f.name) {
+                <mat-option [value]="f.name">{{ f.label }}{{ f.computed ? ' (computed)' : '' }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -30,41 +47,73 @@
           <mat-form-field appearance="outline" class="op-select">
             <mat-label>Operation</mat-label>
             <mat-select [(ngModel)]="row.operation">
-              @for (op of operations; track op.value) {
-                <mat-option [value]="op.value">{{ op.label }}</mat-option>
+              @for (op of operationsFor(row.field); track op) {
+                <mat-option [value]="op">{{ operationLabel(op) }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
 
-          @if (isBetween(row.operation)) {
+          @if (isNoValue(row.operation)) {
+            <!-- no value input -->
+          } @else if (isBetween(row.operation)) {
             <mat-form-field appearance="outline" class="value-input">
               <mat-label>From</mat-label>
-              <input matInput [(ngModel)]="row.startValue"
-                [type]="getFieldType(row.field) === 'date' ? 'datetime-local' : 'text'">
+              <input matInput [(ngModel)]="row.startValue" [type]="inputType(row.field)">
             </mat-form-field>
             <mat-form-field appearance="outline" class="value-input">
               <mat-label>To</mat-label>
-              <input matInput [(ngModel)]="row.endValue"
-                [type]="getFieldType(row.field) === 'date' ? 'datetime-local' : 'text'">
+              <input matInput [(ngModel)]="row.endValue" [type]="inputType(row.field)">
             </mat-form-field>
           } @else if (isMultiValue(row.operation)) {
             <mat-form-field appearance="outline" class="value-input wide">
               <mat-label>Values (comma-separated)</mat-label>
-              <input matInput [(ngModel)]="row.values" placeholder="value1, value2, value3">
+              <input matInput [(ngModel)]="row.values" placeholder="a, b, c">
             </mat-form-field>
-          } @else if (!isNoValue(row.operation)) {
+          } @else if (isEnum(row.field)) {
             <mat-form-field appearance="outline" class="value-input wide">
               <mat-label>Value</mat-label>
-              <input matInput [(ngModel)]="row.value"
-                [type]="getFieldType(row.field) === 'date' ? 'datetime-local' : 'text'">
+              <mat-select [(ngModel)]="row.value">
+                @for (ev of enumValues(row.field); track ev) {
+                  <mat-option [value]="ev">{{ ev }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          } @else if (isBoolean(row.field)) {
+            <mat-form-field appearance="outline" class="value-input wide">
+              <mat-label>Value</mat-label>
+              <mat-select [(ngModel)]="row.value">
+                <mat-option value="true">true</mat-option>
+                <mat-option value="false">false</mat-option>
+              </mat-select>
+            </mat-form-field>
+          } @else {
+            <mat-form-field appearance="outline" class="value-input wide">
+              <mat-label>Value</mat-label>
+              <input matInput [(ngModel)]="row.value" [type]="inputType(row.field)">
             </mat-form-field>
           }
 
-          <button mat-icon-button color="warn" (click)="removeCondition(i)" matTooltip="Remove">
+          <button mat-icon-button color="warn" (click)="removeCondition(group, i)" matTooltip="Remove condition">
             <mat-icon>close</mat-icon>
           </button>
         </div>
       }
+
+      <!-- nested groups -->
+      @for (sub of group.groups; track $index; let gi = $index) {
+        <ng-container [ngTemplateOutlet]="groupTpl"
+                      [ngTemplateOutletContext]="{ $implicit: sub, parent: group.groups, index: gi, isRoot: false }">
+        </ng-container>
+      }
+
+      <div class="group-footer">
+        <button mat-stroked-button (click)="addCondition(group)">
+          <mat-icon>add</mat-icon> Condition
+        </button>
+        <button mat-stroked-button (click)="addGroup(group)">
+          <mat-icon>create_new_folder</mat-icon> Group
+        </button>
+      </div>
     </div>
-  }
+  </ng-template>
 </div>

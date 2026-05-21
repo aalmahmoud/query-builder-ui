@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, UserRequest } from '../models/user.model';
-import { ExportRequest, Page, QueryRequest } from '../models/query.model';
+import { EntityMetadata, ExportRequest, Page, QueryRequest } from '../models/query.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -35,6 +35,10 @@ export class UserService {
 
   changeStatus(id: number, isActive: boolean): Observable<void> {
     return this.http.put<void>(`${this.url}/${id}/change-status`, { isActive });
+  }
+
+  metadata(): Observable<EntityMetadata> {
+    return this.http.get<EntityMetadata>(`${this.url}/metadata`);
   }
 
   query(request: QueryRequest, page = 0, size = 10, sort = 'createdDate,desc'): Observable<Page<User>> {

@@ -13,8 +13,8 @@ import { RouterLink } from '@angular/router';
 
 import { PermissionService } from '../../../core/services/permission.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Permission, PERMISSION_FIELDS, PERMISSION_COLUMNS } from '../../../core/models/permission.model';
-import { QueryRequest } from '../../../core/models/query.model';
+import { Permission, PERMISSION_COLUMNS } from '../../../core/models/permission.model';
+import { FieldMeta, QueryRequest } from '../../../core/models/query.model';
 import { QueryBuilderComponent } from '../../../shared/components/query-builder/query-builder.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ExportDialogComponent, ExportDialogResult } from '../../../shared/components/export-dialog/export-dialog.component';
@@ -33,7 +33,7 @@ import { ExportDialogComponent, ExportDialogResult } from '../../../shared/compo
 export class PermissionListComponent implements OnInit {
   displayedColumns = ['name', 'resource', 'action', 'description', 'isActive', 'actions'];
   dataSource = new MatTableDataSource<Permission>();
-  fields = PERMISSION_FIELDS;
+  fields: FieldMeta[] = [];
   exportColumns = PERMISSION_COLUMNS;
 
   totalElements = signal(0);
@@ -53,12 +53,23 @@ export class PermissionListComponent implements OnInit {
     private dialog: MatDialog,
   ) {}
 
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void {
+    this.permissionService.metadata().subscribe({
+      next: (md) => (this.fields = md.fields),
+      error: () => this.notification.error('Failed to load query metadata'),
+    });
+    this.loadData();
+  }
+
+  private hasFilters(): boolean {
+    return (this.currentQuery.conditions?.length ?? 0) > 0
+      || (this.currentQuery.groups?.length ?? 0) > 0;
+  }
 
   loadData(): void {
     this.loading.set(true);
     const sortParam = `${this.sortField},${this.sortDir}`;
-    const load$ = this.currentQuery.conditions.length > 0
+    const load$ = this.hasFilters()
       ? this.permissionService.query(this.currentQuery, this.pageIndex, this.pageSize, sortParam)
       : this.permissionService.getAll(this.pageIndex, this.pageSize, sortParam);
 

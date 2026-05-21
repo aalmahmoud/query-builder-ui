@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Role, RoleRequest } from '../models/role.model';
-import { ExportRequest, Page, QueryRequest } from '../models/query.model';
+import { EntityMetadata, ExportRequest, Page, QueryRequest } from '../models/query.model';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
@@ -31,6 +31,10 @@ export class RoleService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
+  }
+
+  metadata(): Observable<EntityMetadata> {
+    return this.http.get<EntityMetadata>(`${this.url}/metadata`);
   }
 
   query(request: QueryRequest, page = 0, size = 10, sort = 'name,asc'): Observable<Page<Role>> {

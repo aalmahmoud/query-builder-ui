@@ -13,8 +13,8 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { RoleService } from '../../../core/services/role.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Role, ROLE_FIELDS, ROLE_COLUMNS } from '../../../core/models/role.model';
-import { QueryRequest } from '../../../core/models/query.model';
+import { Role, ROLE_COLUMNS } from '../../../core/models/role.model';
+import { FieldMeta, QueryRequest } from '../../../core/models/query.model';
 import { QueryBuilderComponent } from '../../../shared/components/query-builder/query-builder.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ExportDialogComponent, ExportDialogResult } from '../../../shared/components/export-dialog/export-dialog.component';
@@ -33,7 +33,7 @@ import { ExportDialogComponent, ExportDialogResult } from '../../../shared/compo
 export class RoleListComponent implements OnInit {
   displayedColumns = ['name', 'description', 'permissionNames', 'isActive', 'createdDate', 'actions'];
   dataSource = new MatTableDataSource<Role>();
-  fields = ROLE_FIELDS;
+  fields: FieldMeta[] = [];
   exportColumns = ROLE_COLUMNS;
 
   totalElements = signal(0);
@@ -53,12 +53,23 @@ export class RoleListComponent implements OnInit {
     private dialog: MatDialog,
   ) {}
 
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void {
+    this.roleService.metadata().subscribe({
+      next: (md) => (this.fields = md.fields),
+      error: () => this.notification.error('Failed to load query metadata'),
+    });
+    this.loadData();
+  }
+
+  private hasFilters(): boolean {
+    return (this.currentQuery.conditions?.length ?? 0) > 0
+      || (this.currentQuery.groups?.length ?? 0) > 0;
+  }
 
   loadData(): void {
     this.loading.set(true);
     const sortParam = `${this.sortField},${this.sortDir}`;
-    const load$ = this.currentQuery.conditions.length > 0
+    const load$ = this.hasFilters()
       ? this.roleService.query(this.currentQuery, this.pageIndex, this.pageSize, sortParam)
       : this.roleService.getAll(this.pageIndex, this.pageSize, sortParam);
 

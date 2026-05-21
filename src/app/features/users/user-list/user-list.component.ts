@@ -13,8 +13,8 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { UserService } from '../../../core/services/user.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { User, USER_FIELDS, USER_COLUMNS } from '../../../core/models/user.model';
-import { QueryRequest } from '../../../core/models/query.model';
+import { User, USER_COLUMNS } from '../../../core/models/user.model';
+import { FieldMeta, QueryRequest } from '../../../core/models/query.model';
 import { QueryBuilderComponent } from '../../../shared/components/query-builder/query-builder.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ExportDialogComponent, ExportDialogResult } from '../../../shared/components/export-dialog/export-dialog.component';
@@ -33,7 +33,7 @@ import { ExportDialogComponent, ExportDialogResult } from '../../../shared/compo
 export class UserListComponent implements OnInit {
   displayedColumns = ['firstName', 'lastName', 'email', 'roleName', 'isActive', 'createdDate', 'actions'];
   dataSource = new MatTableDataSource<User>();
-  fields = USER_FIELDS;
+  fields: FieldMeta[] = [];
   exportColumns = USER_COLUMNS;
 
   totalElements = signal(0);
@@ -54,13 +54,23 @@ export class UserListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Metadata-driven: fields, types and valid operations come from the backend.
+    this.userService.metadata().subscribe({
+      next: (md) => (this.fields = md.fields),
+      error: () => this.notification.error('Failed to load query metadata'),
+    });
     this.loadData();
+  }
+
+  private hasFilters(): boolean {
+    return (this.currentQuery.conditions?.length ?? 0) > 0
+      || (this.currentQuery.groups?.length ?? 0) > 0;
   }
 
   loadData(): void {
     this.loading.set(true);
     const sortParam = `${this.sortField},${this.sortDir}`;
-    const load$ = this.currentQuery.conditions.length > 0
+    const load$ = this.hasFilters()
       ? this.userService.query(this.currentQuery, this.pageIndex, this.pageSize, sortParam)
       : this.userService.getAll(this.pageIndex, this.pageSize, sortParam);
 
