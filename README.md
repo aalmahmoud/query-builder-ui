@@ -1,72 +1,87 @@
-# QuerydslAdmin
+# QuerydslAdmin — the Angular UI
 
-Angular 21 admin UI for the [`query-builder-be`](../query-builder-be) JSON query engine.
-It's a **metadata-driven** front end: field lists, operations, and types come from the
-backend's `/{entity}/metadata` endpoint, so each entity (User / Role / Permission) gets the
-full toolset with no hard-coded field lists.
+A **metadata-driven Angular 21** admin UI for the [`generic-querydsl`](https://github.com/aalmahmoud/query-builder-be) JSON query engine. Field lists, operations, types, and even which columns are filterable all come from the backend's `/{entity}/metadata` endpoint — **zero hard-coded field lists**, every entity (User / Role / Permission) gets the full toolset.
 
-Features: a recursive **AND/OR** nested-group query builder, a **projection** column picker,
-an **aggregation** panel (group-by + COUNT/SUM/AVG/MIN/MAX), and **saved queries**.
+![Angular](https://img.shields.io/badge/Angular-21-red) ![Material](https://img.shields.io/badge/Material-MDC-blue) ![Signals](https://img.shields.io/badge/Standalone-Signals-success) ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 
-> **Demo walkthrough** (UI steps + API): see [`docs/DEMO.md`](../query-builder-be/docs/DEMO.md)
-> in the backend repo. The shared request/response contract lives in
-> [`docs/CONTRACT.md`](../query-builder-be/docs/CONTRACT.md).
+🔌 **Backend:** **[query-builder-be](https://github.com/aalmahmoud/query-builder-be)** — the engine plus its Spring Boot reference app.
 
-The backend API base URL is configured in `src/environments/`. This project was generated
-with [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+---
 
-## Development server
+## ✨ What's in the box
 
-To start a local development server, run:
+> _Screenshots — drop captures into `docs/screenshots/` (filenames below)._
 
-```bash
-ng serve
+| | |
+|:--:|:--:|
+| ![Recursive builder](docs/screenshots/recursive-builder.png) | ![Aggregation panel](docs/screenshots/aggregation-panel.png) |
+| **Recursive AND / OR query builder** | **Group-by aggregations** |
+| Nested boolean groups with type-aware operations, all rendered from `/metadata`. | Group by any field, add `COUNT/SUM/AVG/MIN/MAX` metrics; results flow into a flat table. |
+| ![Projection picker](docs/screenshots/projection-picker.png) | ![Saved queries](docs/screenshots/saved-queries.png) |
+| **Projection (sparse fieldsets)** | **Saved queries** |
+| Tick the columns you want; the list switches to a flat projected view. | Save the current builder state by name; reload or delete from the menu. |
+
+📖 **Guided walkthrough:** [docs/DEMO.md (in backend repo)](https://github.com/aalmahmoud/query-builder-be/blob/feature/legendary-query-engine/docs/DEMO.md)
+📋 **Shared contract:** [docs/CONTRACT.md (in backend repo)](https://github.com/aalmahmoud/query-builder-be/blob/feature/legendary-query-engine/docs/CONTRACT.md)
+
+---
+
+## Stack
+
+- **Angular 21** — standalone components, **Signals** for state
+- **Material MDC** for UI primitives
+- **RxJS** with the `takeUntilDestroyed` pattern
+- Recursive query-builder template via `ngTemplateOutlet` (no self-import)
+- Per-feature lazy routes, JWT HTTP interceptor
+
+---
+
+## Architecture
+
+```
+features/
+  users / roles / permissions/
+    *-list.component.ts       ← metadata-driven list page (filter + project + aggregate + saved)
+    *-form.component.ts       ← create / edit
+shared/components/
+  query-builder/              ← recursive AND/OR builder (self-recursive via templates)
+  aggregation-panel/          ← group-by + metrics editor + result table
+core/
+  models/query.model.ts       ← v2 contract types: QueryRequest, QueryGroup, FieldMeta, …
+  services/                   ← entity services: metadata, query, queryProjected, aggregate, savedQueries
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The three list pages are intentionally structurally identical — that's the point. Add a new entity on the backend, configure the same shell, and you get the same page for free.
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Run locally
 
 ```bash
-ng generate --help
+npm install
+npm start                     # http://localhost:4200
 ```
 
-## Building
+The backend API base URL is configured in `src/environments/`. The backend ([query-builder-be](https://github.com/aalmahmoud/query-builder-be)) needs to be running on `localhost:8080`. Seeded login: `admin@system.com` / `admin123`.
 
-To build the project run:
+---
+
+## Build & test
 
 ```bash
-ng build
+ng build                      # production build to dist/
+ng test                       # Vitest unit tests
+ng e2e                        # e2e (framework of your choice)
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## Author
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+**Abdullah Almahmoud**  ·  [LinkedIn](https://sa.linkedin.com/in/asalmahmoud)  ·  [GitHub @aalmahmoud](https://github.com/aalmahmoud)
 
-```bash
-ng test
-```
+---
 
-## Running end-to-end tests
+## License
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Apache 2.0
